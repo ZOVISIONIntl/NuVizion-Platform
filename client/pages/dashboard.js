@@ -1,86 +1,110 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import Sidebar from '../components/Sidebar';
+import DashboardSummary from '../components/DashboardSummary';
+import AccountTierBadge from '../components/AccountTierBadge';
 
 export default function Dashboard() {
-  const [token, setToken] = useState('');
-  const [profile, setProfile] = useState(null);
-  const [products, setProducts] = useState([]);
-  const [balance, setBalance] = useState(0);
+  // Placeholder for user and dashboard data; replace with API calls later
+  const [user, setUser] = useState({
+    name: "ŽỌ",
+    tier: "Covenant",
+    role: "Founder", // Can be 'Creator', 'Covenant', 'Subscriber', 'Founder'
+    avatar: "/default-avatar.png", // swap with actual avatar later
+  });
 
-  useEffect(() => {
-    const t = window.localStorage.getItem('token') || '';
-    setToken(t);
+  const [stats, setStats] = useState([
+    { label: "Earnings", value: "$4,250" },
+    { label: "Subscribers", value: "187" },
+    { label: "Payouts Pending", value: "$1,200" },
+    { label: "Tier", value: user.tier },
+    { label: "Write-off Eligible?", value: user.tier === "Covenant" ? "Yes" : "No" },
+  ]);
 
-    if (t) {
-      axios.get('http://localhost:4000/api/users/me', { headers: { Authorization: `Bearer ${t}` } })
-        .then(res => setProfile(res.data))
-        .catch(() => setProfile(null));
-
-      axios.get('http://localhost:4000/api/payouts/balance', { headers: { Authorization: `Bearer ${t}` } })
-        .then(res => setBalance(res.data.balance))
-        .catch(() => setBalance(0));
-    }
-  }, []);
-
-  useEffect(() => {
-    axios.get('http://localhost:4000/api/marketplace/')
-      .then(res => setProducts(res.data))
-      .catch(() => setProducts([]));
-  }, []);
+  // Example useEffect for future API call
+  // useEffect(() => {
+  //   fetch("/api/dashboard").then(res => res.json()).then(data => {
+  //     setUser(data.user);
+  //     setStats(data.stats);
+  //   });
+  // }, []);
 
   return (
-    <div style={{ maxWidth: 900, margin: "2rem auto", background: "#fff", borderRadius: "12px", padding: 30, boxShadow: "0 4px 32px #0002" }}>
-      <h2 style={{ marginBottom: 4 }}>Creator Dashboard</h2>
-      <p style={{ marginBottom: 20, color: "#8b5cf6" }}>
-        “A platform for creators, visionaries, and the Covenant. Build. Monetize. Dominate. All on your own terms.”
-      </p>
-      {profile ? (
-        <>
-          <div style={{ display: "flex", gap: "2rem", alignItems: "center", marginBottom: "1.2rem" }}>
+    <div className="flex min-h-screen bg-gradient-to-br from-black via-gray-900 to-indigo-900">
+      <Sidebar />
+      <main className="flex-1 p-8">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <img
+              src={user.avatar}
+              alt="Avatar"
+              className="w-14 h-14 rounded-full border-4 border-purple-600 shadow"
+            />
             <div>
-              <b>{profile.username}</b> <span style={{ color: "#10b981" }}>({profile.role})</span>
-              <div>
-                <span style={{
-                  background: profile.tier === 'Covenant' ? "#fbbf24" : profile.tier === 'Tier2' ? "#3b82f6" : "#a1a1aa",
-                  color: "#222", borderRadius: 6, padding: "2px 10px", fontWeight: "bold"
-                }}>
-                  {profile.tier}
-                </span>
-              </div>
-              <div>Balance: <b>${balance}</b></div>
-            </div>
-            <div style={{ marginLeft: "auto" }}>
-              <button style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 6, padding: "6px 16px", fontWeight: "bold", cursor: "pointer" }}>Request Payout</button>
+              <h1 className="text-3xl font-bold text-white tracking-tight">Welcome, {user.name}</h1>
+              <p className="text-gray-300">
+                Status: <span className="font-semibold">{user.role}</span>
+              </p>
             </div>
           </div>
+          <AccountTierBadge tier={user.tier} />
+        </header>
 
-          {/* Tier Features */}
-          <div style={{ marginBottom: 30 }}>
-            <b>Tier Features:</b>
-            <ul>
-              <li>Tier 1: Basic Marketplace Access</li>
-              <li>Tier 2: Tax Deductibility, Advanced Analytics</li>
-              <li>Covenant: All Tier 2 features + AR/VR, Direct Funding, VIP Access</li>
+        {/* Dashboard summary stats */}
+        <DashboardSummary stats={stats} />
+
+        {/* Quick Actions & Announcements */}
+        <section className="grid md:grid-cols-2 gap-6 mt-8">
+          {/* Quick Links */}
+          <div className="bg-gray-800 rounded-2xl shadow-lg p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
+            <div className="flex flex-wrap gap-4">
+              <ActionButton href="/marketplace" label="Marketplace" />
+              <ActionButton href="/fundraisers" label="Fundraisers" />
+              <ActionButton href="/payouts" label="Payouts" />
+              <ActionButton href="/profile" label="Profile" />
+              <ActionButton href="/settings" label="Settings" />
+              {user.role === "Founder" && (
+                <ActionButton href="/admin" label="Admin" color="bg-red-600" />
+              )}
+            </div>
+          </div>
+          {/* Announcements or News */}
+          <div className="bg-gradient-to-br from-indigo-700 to-fuchsia-700 text-white rounded-2xl shadow-lg p-6 flex flex-col">
+            <h2 className="text-xl font-semibold mb-3">Platform Announcements</h2>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <span className="font-bold">🔥 Covenant Update:</span> Tier 3 subscribers now get automatic tax write-off eligibility. 
+              </li>
+              <li>
+                <span className="font-bold">🛠️ Feature Drop:</span> AR/VR creator tools rolling out soon!
+              </li>
+              <li>
+                <span className="font-bold">💸 Fundraiser:</span> Support NuWurldEra by joining the official platform campaigns.
+              </li>
             </ul>
           </div>
-        </>
-      ) : (
-        <p style={{ color: 'red' }}>Please log in to access the dashboard.</p>
-      )}
+        </section>
 
-      {/* Products Table */}
-      <div>
-        <h3>Your Products</h3>
-        <ul>
-          {products.filter(p => p.creator._id === profile?._id).map(prod => (
-            <li key={prod._id} style={{ margin: '1rem 0', borderBottom: '1px solid #eee' }}>
-              <b>{prod.title}</b> (${prod.price}) [{prod.category}]
-              <div style={{ fontSize: 13, color: "#666" }}>{prod.description}</div>
-              {prod.imageUrl && <img src={prod.imageUrl} alt={prod.title} style={{ maxWidth: 120 }} />}
-            </li>
-          ))}
-        </ul>
-      </div>
+        {/* More widgets or analytics can go here */}
+        <section className="mt-8">
+          <h2 className="text-2xl font-bold text-white mb-4">Activity Feed (Coming Soon)</h2>
+          <div className="bg-gray-900 rounded-xl h-32 flex items-center justify-center text-gray-400">
+            Real-time stats, recent payouts, new subscribers, and more will show up here.
+          </div>
+        </section>
+      </main>
     </div>
+  );
+}
+
+// Quick action button for dashboard shortcuts
+function ActionButton({ href, label, color }) {
+  return (
+    <a
+      href={href}
+      className={`px-5 py-2 rounded-full font-bold text-white shadow transition hover:scale-105 hover:bg-purple-800 ${color || "bg-purple-700"}`}
+    >
+      {label}
+    </a>
   );
 }
