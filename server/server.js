@@ -7,6 +7,13 @@ const dotenv = require('dotenv');
 const marketplaceRoutes = require('./routes/marketplaceRoutes');
 const payoutRoutes = require('./routes/payoutRoutes');
 const receiptRoutes = require('./routes/receiptRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+const subscriptionRoutes = require('./routes/subscriptionRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const gamingRoutes = require('./routes/gamingRoutes');
+const squareRoutes = require('./routes/squareRoutes');
 
 // Load env vars
 dotenv.config();
@@ -40,6 +47,14 @@ app.use('/api/receipts', require('./routes/receiptRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/marketplace', require('./routes/marketplaceRoutes'));
 app.use('/api/receipts', receiptRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/subscriptions', subscriptionRoutes)
+app.use('/api/settings', settingsRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/gaming', gamingRoutes);
+app.use('/api/square', squareRoutes);
+
 // Add more routes as you build them
 
 // Start server
