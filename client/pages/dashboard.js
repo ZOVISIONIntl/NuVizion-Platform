@@ -3,6 +3,18 @@ import Sidebar from '../components/Sidebar';
 import DashboardSummary from '../components/DashboardSummary';
 import AccountTierBadge from '../components/AccountTierBadge';
 
+// Quick action button for dashboard shortcuts
+function ActionButton({ href, label, color }) {
+  return (
+    <a
+      href={href}
+      className={`px-5 py-2 rounded-full font-bold text-white shadow transition hover:scale-105 hover:bg-purple-800 ${color || "bg-purple-700"}`}
+    >
+      {label}
+    </a>
+  );
+}
+
 export default function Dashboard() {
   // Placeholder for user and dashboard data; replace with API calls later
   const [user, setUser] = useState({
@@ -94,17 +106,5 @@ export default function Dashboard() {
         </section>
       </main>
     </div>
-  );
-}
-
-// Quick action button for dashboard shortcuts
-function ActionButton({ href, label, color }) {
-  return (
-    <a
-      href={href}
-      className={`px-5 py-2 rounded-full font-bold text-white shadow transition hover:scale-105 hover:bg-purple-800 ${color || "bg-purple-700"}`}
-    >
-      {label}
-    </a>
   );
 }
