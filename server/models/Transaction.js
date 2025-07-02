@@ -9,7 +9,7 @@ const TransactionSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
   method: { type: String, enum: ['direct', 'nuvizion', 'covenant'] },
   createdAt: { type: Date, default: Date.now },
-  receiptUrl: String
+  receiptUrl: String,
 });
 
 module.exports = mongoose.model('Transaction', TransactionSchema);
