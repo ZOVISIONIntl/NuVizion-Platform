@@ -1,36 +1,42 @@
-require('dotenv').config();
+ // server/server.js
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const dotenv = require('dotenv');
 
-// Import routes
-const userRoutes = require('./routes/userRoutes');
-const payoutRoutes = require('./routes/payoutRoutes');
-const receiptRoutes = require('./routes/receiptRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');  // <-- add when you create payment logic
-const marketplaceRoutes = require('./routes/marketplaceRoutes');
+// Load env vars
+dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 4000;
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 4000;
-
-// Connect to MongoDB
-require('./db');
-
 // Basic health check
-app.get('/', (req, res) => res.send('NuVizion Backend API Running'));
+app.get('/', (req, res) => {
+  res.send('NuVizion Backend API is up!');
+});
 
-// Mount routes
-app.use('/api/users', userRoutes);
-app.use('/api/payouts', payoutRoutes);
-app.use('/api/receipts', receiptRoutes);
-app.use('/api/payments', paymentRoutes); // <-- enable this as soon as paymentRoutes.js exists
-app.use('/api/marketplace', marketplaceRoutes);
-app.use('/legal/receipts', express.static(__dirname + '/../legal/receipts'));
+// === Connect to MongoDB ===
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('✅ MongoDB connected'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
 
+// === ROUTES ===
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/payouts', require('./routes/payoutRoutes'));
+app.use('/api/receipts', require('./routes/receiptRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/marketplace', require('./routes/marketplaceRoutes'));
+// Add more routes as you build them
 
+// Start server
 app.listen(PORT, () => {
-  console.log(`NuVizion server running on port ${PORT}`);
+  console.log(`🚀 NuVizion server running on port ${PORT}`);
 });
