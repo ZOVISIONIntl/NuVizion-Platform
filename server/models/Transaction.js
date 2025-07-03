@@ -12,5 +12,5 @@ const transactionSchema = new mongoose.Schema({
   createdAt:  { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Transaction', transactionSchema);
- 
+// THIS FIXES THE ERROR:
+module.exports = mongoose.models.Transaction || mongoose.model('Transaction', transactionSchema);
