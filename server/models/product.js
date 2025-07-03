@@ -1,7 +1,6 @@
-const mongoose = require('mongoose');
+ const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
-
   creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
   description: String,
@@ -14,5 +13,5 @@ const ProductSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Product', ProductSchema);
-
+// Prevent OverwriteModelError on server reloads
+module.exports = mongoose.models.Product || mongoose.model('Product', ProductSchema);
