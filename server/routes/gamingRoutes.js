@@ -1,11 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
-const { getProfile, updateProfile, addItem, removeItem } = require('../controllers/gamingController');
+const { testGamingRoute } = require('../controllers/gamingController');
 
-router.get('/', auth, getProfile);
-router.put('/', auth, updateProfile);
-router.post('/add-item', auth, addItem);
-router.post('/remove-item', auth, removeItem);
+router.get('/test', testGamingRoute);
 
 module.exports = router;
+ 
