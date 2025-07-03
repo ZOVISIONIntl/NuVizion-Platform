@@ -1,6 +1,7 @@
-const User = require('../models/User');
+ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
-const generateReceipt = require('../utils/receipt'); // If you want to generate PDF instantly
+const generateReceipt = require('../utils/receipt');
+const { addProfit } = require('../utils/nucoin');
 
 // POST /api/payments/subscribe
 exports.subscribeAndPay = async (req, res) => {
@@ -8,24 +9,35 @@ exports.subscribeAndPay = async (req, res) => {
     const { creatorId, amount } = req.body;
     const subscriberId = req.user.id;
 
-    // Find the creator
+    // Validate creator
     const creator = await User.findById(creatorId);
     if (!creator || creator.role !== 'creator') {
       return res.status(400).json({ msg: 'Invalid creator ID.' });
     }
 
-    // Subscribers can’t subscribe to themselves or other subscribers
+    // Prevent self-subscription
     if (creatorId === subscriberId) {
       return res.status(400).json({ msg: 'You cannot subscribe to yourself.' });
     }
 
     // Get creator’s tier at time of transaction
-    const creatorTier = creator.tier;
+    const creatorTier = creator.tier || 'basic';
 
-    // TODO: Add your real payment gateway logic here (Stripe, crypto, etc.)
-    // For now, just pretend payment succeeded.
+    // --------- PAYMENT GATEWAY INTEGRATION HERE ---------
+    // TODO: Connect real payment logic (Stripe, PayPal, etc.)
+    // For now, we'll assume payment succeeded.
 
-    // Record transaction
+    // Calculate platform fee (e.g., 10%)
+    const platformFeeAmount = Math.floor(amount * 0.10); // You can change %
+
+    // Credit NuCoin profit ledger (internal treasury)
+    await addProfit({
+      ownerId: process.env.ADMIN_USER_ID, // Set this env var to your admin user ID
+      amount: platformFeeAmount,
+      note: `Platform fee from subscription payment: subscriber ${subscriberId} → creator ${creatorId}`
+    });
+
+    // Record full transaction (subscriber, creator, full amount, etc.)
     const txn = new Transaction({
       subscriber: subscriberId,
       creator: creatorId,
@@ -37,10 +49,9 @@ exports.subscribeAndPay = async (req, res) => {
     });
     await txn.save();
 
-    // If the creator is "covenant", offer a receipt
+    // Optionally: Generate a tax-deductible receipt if creator is "covenant"
     let receiptUrl = null;
     if (creatorTier === 'covenant') {
-      // Generate a donation receipt for the subscriber (optional, comment if you want manual download later)
       receiptUrl = await generateReceipt({
         name: req.user.username,
         email: req.user.email,
@@ -52,11 +63,13 @@ exports.subscribeAndPay = async (req, res) => {
       });
     }
 
+    // Respond to frontend
     res.json({
       msg: `Subscription/payment processed. ${creatorTier === 'covenant' ? 'You are eligible for a tax receipt.' : 'This payment is NOT tax deductible.'}`,
       txn,
       receiptUrl
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: 'Server error' });

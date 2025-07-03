@@ -54,6 +54,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/gaming', gamingRoutes);
 app.use('/api/square', squareRoutes);
+app.use('/api/nucoin', require('./routes/nucoinRoutes'));
 
 // Add more routes as you build them
 
