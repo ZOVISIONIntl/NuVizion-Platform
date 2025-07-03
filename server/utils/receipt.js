@@ -2,28 +2,48 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-async function generateReceipt({ name, email, amount, txnId }) {
-  const doc = new PDFDocument();
-  const filename = `receipt_${txnId || Date.now()}.pdf`;
-  const outPath = path.join(__dirname, '..', '..', 'legal', 'receipts', filename);
+/**
+ * Generate a PDF receipt and return the file path.
+ * @param {Object} options
+ * @param {string} options.name
+ * @param {string} options.email
+ * @param {number} options.amount
+ * @param {string} options.txnId
+ * @returns {Promise<string>} The path to the PDF file
+ */
+module.exports = function generateReceipt({ name, email, amount, txnId }) {
+  return new Promise((resolve, reject) => {
+    // Ensure the receipts directory exists
+    const receiptsDir = path.join(__dirname, '../legal/receipts');
+    if (!fs.existsSync(receiptsDir)) {
+      fs.mkdirSync(receiptsDir, { recursive: true });
+    }
 
-  doc.fontSize(18).text('NuVizion Official Receipt', { align: 'center' });
-  doc.moveDown();
-  doc.fontSize(12).text(`Name: ${name}`);
-  doc.text(`Email: ${email}`);
-  doc.text(`Amount: $${amount}`);
-  doc.text(`Transaction ID: ${txnId}`);
-  doc.moveDown();
-  doc.text('This is your official digital receipt from NuVizion.');
-  doc.end();
+    // Generate filename
+    const filename = `receipt_${txnId}.pdf`;
+    const filePath = path.join(receiptsDir, filename);
 
-  await new Promise((resolve, reject) => {
-    doc.pipe(fs.createWriteStream(outPath));
-    doc.on('finish', resolve);
-    doc.on('error', reject);
+    // Create PDF
+    const doc = new PDFDocument();
+    const stream = fs.createWriteStream(filePath);
+
+    doc.pipe(stream);
+
+    // Basic receipt layout
+    doc.fontSize(20).text('NuVizion Receipt', { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(14).text(`Receipt for: ${name}`);
+    doc.text(`Email: ${email}`);
+    doc.text(`Transaction ID: ${txnId}`);
+    doc.text(`Amount: $${amount}`);
+    doc.text(`Date: ${new Date().toLocaleString()}`);
+    doc.moveDown();
+    doc.text('Thank you for your support!', { align: 'center' });
+
+    doc.end();
+
+    stream.on('finish', () => resolve(filePath));
+    stream.on('error', reject);
   });
-  return outPath;
-}
-
-module.exports = generateReceipt;
+};
  
